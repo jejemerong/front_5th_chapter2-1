@@ -237,37 +237,46 @@ function handleClickAddBtn() {
   }
 }
 
-// 장바구니 수량 변경 이벤트 핸들러
+// TODO: 상품과 아이템 구분, 수량변경/삭제 이벤트 구분
+// 장바구니 아이템 이벤트 핸들러 => // TODO: 다른 이벤트 핸들러와 구분되도록 변수명 변경
 function handleClickCartEvent(event) {
-  let target = event.target;
-  if (target.classList.contains('quantity-change') || target.classList.contains('remove-item')) {
-    let prodId = target.dataset.productId;
-    let itemElem = document.getElementById(prodId);
-    let prod = productList.find(function (p) {
-      return p.id === prodId;
-    });
-    if (target.classList.contains('quantity-change')) {
-      let qtyChange = parseInt(target.dataset.change);
-      let newQty = parseInt(itemElem.querySelector('span').textContent.split('x ')[1]) + qtyChange;
-      if (
-        newQty > 0 &&
-        newQty <=
-          prod.stockQuantity + parseInt(itemElem.querySelector('span').textContent.split('x ')[1])
-      ) {
-        itemElem.querySelector('span').textContent =
-          itemElem.querySelector('span').textContent.split('x ')[0] + 'x ' + newQty;
-        prod.stockQuantity -= qtyChange;
-      } else if (newQty <= 0) {
-        itemElem.remove();
-        prod.stockQuantity -= qtyChange;
-      } else {
-        alert('재고가 부족합니다.');
-      }
-    } else if (target.classList.contains('remove-item')) {
-      let remQty = parseInt(itemElem.querySelector('span').textContent.split('x ')[1]);
-      prod.stockQuantity += remQty;
-      itemElem.remove();
+  // 장바구니 이벤트 확인
+  const target = event.target;
+  const isQuantityChanged = target.classList.contains('quantity-change');
+  const isItemRemoved = target.classList.contains('remove-item');
+  if (!isQuantityChanged && !isItemRemoved) return;
+
+  // 현재 선택된 상품 정보
+  const productId = target.dataset.productId;
+  const productElement = document.getElementById(productId);
+  const targetProduct = productList.find((product) => product.id === productId);
+
+  // 상품 정보 정제
+  const splitProduct = productElement.querySelector('span').textContent.split('x '); // [ '상품1 - 10000원 ', '1' ]
+  const formattedProduct = splitProduct[0];
+  const prevQuantity = parseInt(splitProduct[1]);
+
+  // 수량 변경
+  if (isQuantityChanged) {
+    const change = parseInt(target.dataset.change);
+    const currentQuantity = prevQuantity + change;
+
+    if (currentQuantity > 0 && currentQuantity <= targetProduct.stockQuantity + prevQuantity) {
+      productElement.querySelector('span').textContent = formattedProduct + 'x ' + currentQuantity;
+      targetProduct.stockQuantity -= change;
+    } else if (currentQuantity <= 0) {
+      productElement.remove();
+      targetProduct.stockQuantity -= change;
+    } else {
+      alert('재고가 부족합니다.');
     }
-    calculateCartItems();
   }
+
+  // 아이템 삭제
+  if (isItemRemoved) {
+    targetProduct.stockQuantity += prevQuantity;
+    productElement.remove();
+  }
+
+  calculateCartItems();
 }
