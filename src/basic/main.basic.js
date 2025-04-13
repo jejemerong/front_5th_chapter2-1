@@ -5,7 +5,8 @@ let selection, addBtn, itemContainer, sum, stock;
 let lastSel,
   totalAmt = 0;
 
-function main() {
+// DOM 요소 추가
+function render() {
   const app = document.getElementById('app');
 
   let appContainer = document.createElement('div');
@@ -48,7 +49,11 @@ function main() {
   app.appendChild(appContainer);
 
   calculateCartItems();
+}
 
+// 렌더 호출, 이벤트 바인딩, 호출 스케줄링
+function main() {
+  render();
   addBtn.addEventListener('click', handleClickAddBtn);
   itemContainer.addEventListener('click', handleClickCartEvent);
 
@@ -79,7 +84,7 @@ function main() {
   }, Math.random() * 20000);
 }
 
-// TODO: options 를 빼도 될런지
+// 아이템 선택
 function updateSelections() {
   selection.innerHTML = '';
   productList.forEach(function (item) {
@@ -91,6 +96,7 @@ function updateSelections() {
   });
 }
 
+// 장바구니 가격 계산
 function calculateCartItems() {
   totalAmt = 0;
   let itemCount = 0;
@@ -155,6 +161,7 @@ function calculateCartItems() {
   renderPoints();
 }
 
+// 포인트 view
 const renderPoints = () => {
   let points = Math.floor(totalAmt / 1000);
   let pointContainer = document.getElementById('loyalty-points');
@@ -168,6 +175,7 @@ const renderPoints = () => {
   pointContainer.textContent = '(포인트: ' + points + ')';
 };
 
+// 재고 view
 const updateStock = () => {
   let infoMsg = '';
   productList.forEach(function (item) {
@@ -184,6 +192,7 @@ const updateStock = () => {
 
 main();
 
+// 추가 버튼 클릭 이벤트 핸들러
 function handleClickAddBtn() {
   let selItem = selection.value;
   let itemToAdd = productList.find(function (p) {
@@ -228,16 +237,17 @@ function handleClickAddBtn() {
   }
 }
 
+// 장바구니 수량 변경 이벤트 핸들러
 function handleClickCartEvent(event) {
-  let tgt = event.target;
-  if (tgt.classList.contains('quantity-change') || tgt.classList.contains('remove-item')) {
-    let prodId = tgt.dataset.productId;
+  let target = event.target;
+  if (target.classList.contains('quantity-change') || target.classList.contains('remove-item')) {
+    let prodId = target.dataset.productId;
     let itemElem = document.getElementById(prodId);
     let prod = productList.find(function (p) {
       return p.id === prodId;
     });
-    if (tgt.classList.contains('quantity-change')) {
-      let qtyChange = parseInt(tgt.dataset.change);
+    if (target.classList.contains('quantity-change')) {
+      let qtyChange = parseInt(target.dataset.change);
       let newQty = parseInt(itemElem.querySelector('span').textContent.split('x ')[1]) + qtyChange;
       if (
         newQty > 0 &&
@@ -253,7 +263,7 @@ function handleClickCartEvent(event) {
       } else {
         alert('재고가 부족합니다.');
       }
-    } else if (tgt.classList.contains('remove-item')) {
+    } else if (target.classList.contains('remove-item')) {
       let remQty = parseInt(itemElem.querySelector('span').textContent.split('x ')[1]);
       prod.stockQuantity += remQty;
       itemElem.remove();
