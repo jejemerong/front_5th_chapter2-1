@@ -1,3 +1,4 @@
+// TODO: 전역 변수 지양하기
 let productList, selection, addBtn, cartContainer, sum, stock;
 let lastSel,
   points = 0,
@@ -12,9 +13,10 @@ function main() {
     { id: 'p4', name: '상품4', val: 15000, q: 0 },
     { id: 'p5', name: '상품5', val: 25000, q: 10 },
   ];
-  let root = document.getElementById('app');
-  let cont = document.createElement('div');
-  let wrap = document.createElement('div');
+  const app = document.getElementById('app');
+
+  let appContainer = document.createElement('div');
+  let wrapper = document.createElement('div');
   let cartTitle = document.createElement('h1');
 
   cartContainer = document.createElement('div');
@@ -29,8 +31,8 @@ function main() {
   addBtn.id = 'add-to-cart';
   stock.id = 'stock-status';
 
-  cont.className = 'bg-gray-100 p-8';
-  wrap.className =
+  appContainer.className = 'bg-gray-100 p-8';
+  wrapper.className =
     'max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-8';
   cartTitle.className = 'text-2xl font-bold mb-4';
   sum.className = 'text-xl font-bold my-4';
@@ -42,14 +44,15 @@ function main() {
   addBtn.textContent = '추가';
 
   updateSelections();
-  wrap.appendChild(cartTitle);
-  wrap.appendChild(cartContainer);
-  wrap.appendChild(sum);
-  wrap.appendChild(selection);
-  wrap.appendChild(addBtn);
-  wrap.appendChild(stock);
-  cont.appendChild(wrap);
-  root.appendChild(cont);
+
+  wrapper.appendChild(cartTitle);
+  wrapper.appendChild(cartContainer);
+  wrapper.appendChild(sum);
+  wrapper.appendChild(selection);
+  wrapper.appendChild(addBtn);
+  wrapper.appendChild(stock);
+  appContainer.appendChild(wrapper);
+  app.appendChild(appContainer);
 
   calculateCartItems();
 
@@ -158,15 +161,15 @@ function calculateCartItems() {
 
 const renderPoints = () => {
   points = Math.floor(totalAmt / 1000);
-  let ptsTag = document.getElementById('loyalty-points');
+  let pointContainer = document.getElementById('loyalty-points');
 
-  if (!ptsTag) {
-    ptsTag = document.createElement('span');
-    ptsTag.id = 'loyalty-points';
-    ptsTag.className = 'text-blue-500 ml-2';
-    sum.appendChild(ptsTag);
+  if (!pointContainer) {
+    pointContainer = document.createElement('span');
+    pointContainer.id = 'loyalty-points';
+    pointContainer.className = 'text-blue-500 ml-2';
+    sum.appendChild(pointContainer);
   }
-  ptsTag.textContent = '(포인트: ' + points + ')';
+  pointContainer.textContent = '(포인트: ' + points + ')';
 };
 
 const updateStock = () => {
