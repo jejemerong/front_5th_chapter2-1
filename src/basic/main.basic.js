@@ -1,11 +1,9 @@
 // TODO: 전역 변수 지양하기
 import productList from './data.json';
 
-let selection, addBtn, cartContainer, sum, stock;
+let selection, addBtn, itemContainer, sum, stock;
 let lastSel,
-  points = 0,
-  totalAmt = 0,
-  itemCount = 0;
+  totalAmt = 0;
 
 function main() {
   const app = document.getElementById('app');
@@ -14,13 +12,13 @@ function main() {
   let wrapper = document.createElement('div');
   let cartTitle = document.createElement('h1');
 
-  cartContainer = document.createElement('div');
+  itemContainer = document.createElement('div');
   sum = document.createElement('div');
   selection = document.createElement('select');
   addBtn = document.createElement('button');
   stock = document.createElement('div');
 
-  cartContainer.id = 'cart-items';
+  itemContainer.id = 'cart-items';
   sum.id = 'cart-total';
   selection.id = 'product-select';
   addBtn.id = 'add-to-cart';
@@ -41,7 +39,7 @@ function main() {
   updateSelections();
 
   wrapper.appendChild(cartTitle);
-  wrapper.appendChild(cartContainer);
+  wrapper.appendChild(itemContainer);
   wrapper.appendChild(sum);
   wrapper.appendChild(selection);
   wrapper.appendChild(addBtn);
@@ -52,7 +50,7 @@ function main() {
   calculateCartItems();
 
   addBtn.addEventListener('click', handleClickAddBtn);
-  cartContainer.addEventListener('click', handleClickCartEvent);
+  itemContainer.addEventListener('click', handleClickCartEvent);
 
   setTimeout(function () {
     setInterval(function () {
@@ -95,8 +93,8 @@ function updateSelections() {
 
 function calculateCartItems() {
   totalAmt = 0;
-  itemCount = 0;
-  let cartItems = cartContainer.children;
+  let itemCount = 0;
+  let cartItems = itemContainer.children;
   let subTot = 0;
 
   for (let i = 0; i < cartItems.length; i++) {
@@ -158,7 +156,7 @@ function calculateCartItems() {
 }
 
 const renderPoints = () => {
-  points = Math.floor(totalAmt / 1000);
+  let points = Math.floor(totalAmt / 1000);
   let pointContainer = document.getElementById('loyalty-points');
 
   if (!pointContainer) {
@@ -222,7 +220,7 @@ function handleClickAddBtn() {
         '<button class="remove-item bg-red-500 text-white px-2 py-1 rounded" data-product-id="' +
         itemToAdd.id +
         '">삭제</button></div>';
-      cartContainer.appendChild(newItem);
+      itemContainer.appendChild(newItem);
       itemToAdd.stockQuantity--;
     }
     calculateCartItems();
