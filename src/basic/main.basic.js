@@ -182,7 +182,10 @@ const updateStock = () => {
 
 main();
 
-addBtn.addEventListener('click', function () {
+addBtn.addEventListener('click', handleClickAddBtn);
+cartContainer.addEventListener('click', handleClickCartEvent);
+
+function handleClickAddBtn() {
   let selItem = selection.value;
   let itemToAdd = productList.find(function (p) {
     return p.id === selItem;
@@ -223,9 +226,8 @@ addBtn.addEventListener('click', function () {
     calculateCartItems();
     lastSel = selItem;
   }
-});
-
-cartContainer.addEventListener('click', function (event) {
+}
+function handleClickCartEvent(event) {
   let tgt = event.target;
   if (tgt.classList.contains('quantity-change') || tgt.classList.contains('remove-item')) {
     let prodId = tgt.dataset.productId;
@@ -256,4 +258,4 @@ cartContainer.addEventListener('click', function (event) {
     }
     calculateCartItems();
   }
-});
+}
