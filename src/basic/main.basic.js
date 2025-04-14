@@ -1,5 +1,6 @@
 // TODO: 전역 변수 지양하기
 import productList from './data.json';
+import { scheduleRandomInterval } from './utils';
 
 let selection, addBtn, itemContainer, sum, stock;
 let lastSel,
@@ -51,37 +52,38 @@ function render() {
   calculateCartItems();
 }
 
-// 렌더 호출, 이벤트 바인딩, 호출 스케줄링
 function main() {
   render();
+
+  // 이벤트 핸들러 등록
   addBtn.addEventListener('click', handleClickAddBtn);
   itemContainer.addEventListener('click', handleClickCartEvent);
 
-  setTimeout(function () {
-    setInterval(function () {
-      let luckyItem = productList[Math.floor(Math.random() * productList.length)];
-      if (Math.random() < 0.3 && luckyItem.stockQuantity > 0) {
-        luckyItem.price = Math.round(luckyItem.price * 0.8);
-        alert('번개세일! ' + luckyItem.name + '이(가) 20% 할인 중입니다!');
+  // 세일 타이머 등록
+  scheduleRandomInterval(luckySaleTime, 30000, 10000);
+  scheduleRandomInterval(suggestSaleTime, 60000, 20000);
+
+  function luckySaleTime() {
+    let luckyItem = productList[Math.floor(Math.random() * productList.length)];
+
+    if (Math.random() < 0.3 && luckyItem.stockQuantity > 0) {
+      alert('번개세일! ' + luckyItem.name + '이(가) 20% 할인 중입니다!');
+      luckyItem.price = Math.round(luckyItem.price * 0.8);
+      updateSelections();
+    }
+  }
+
+  function suggestSaleTime() {
+    if (lastSel) {
+      let suggestItem = productList.find((item) => item.id !== lastSel && item.stockQuantity > 0);
+
+      if (suggestItem) {
+        alert(suggestItem.name + '은(는) 어떠세요? 지금 구매하시면 5% 추가 할인!');
+        suggestItem.price = Math.round(suggestItem.price * 0.95);
         updateSelections();
       }
-    }, 30000);
-  }, Math.random() * 10000);
-
-  setTimeout(function () {
-    setInterval(function () {
-      if (lastSel) {
-        let suggest = productList.find(function (item) {
-          return item.id !== lastSel && item.stockQuantity > 0; // 선택하지 않았지만 재고가 남아있는 물품
-        });
-        if (suggest) {
-          alert(suggest.name + '은(는) 어떠세요? 지금 구매하시면 5% 추가 할인!');
-          suggest.price = Math.round(suggest.price * 0.95);
-          updateSelections();
-        }
-      }
-    }, 60000);
-  }, Math.random() * 20000);
+    }
+  }
 }
 
 // 아이템 선택
