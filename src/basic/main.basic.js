@@ -112,34 +112,19 @@ function updateSelections() {
 function calculateCartItems() {
   totalAmt = 0;
   let itemCount = 0;
-
-  let cartItems = itemContainer.children;
   let subTot = 0;
 
-  for (let i = 0; i < cartItems.length; i++) {
-    (function () {
-      let curItem;
-      for (let j = 0; j < productList.length; j++) {
-        if (productList[j].id === cartItems[i].id) {
-          curItem = productList[j];
-          break;
-        }
-      }
-      let selectedCount = parseInt(cartItems[i].querySelector('span').textContent.split('x ')[1]);
-      let itemTot = curItem.price * selectedCount;
-      let disc = 0;
-      itemCount += selectedCount;
-      subTot += itemTot;
-      if (selectedCount >= 10) {
-        if (curItem.id === 'p1') disc = 0.1;
-        else if (curItem.id === 'p2') disc = 0.15;
-        else if (curItem.id === 'p3') disc = 0.2;
-        else if (curItem.id === 'p4') disc = 0.05;
-        else if (curItem.id === 'p5') disc = 0.25;
-      }
-      totalAmt += itemTot * (1 - disc);
-    })();
-  }
+  const cartItems = Array.from(itemContainer.children);
+
+  cartItems.forEach((cartItem) => {
+    const currentItem = productList.find((productItem) => productItem.id === cartItem.id);
+    const selectedCount = parseInt(cartItem.querySelector('span').textContent.split('x ')[1]);
+    const itemTot = currentItem.price * selectedCount;
+    const disc = selectedCount >= 10 ? PRODUCT_DISCOUNT[currentItem.id] : 0;
+    itemCount += selectedCount;
+    subTot += itemTot;
+    totalAmt += itemTot * (1 - disc);
+  });
 
   let discRate = 0;
 
