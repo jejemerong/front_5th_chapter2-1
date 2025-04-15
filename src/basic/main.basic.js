@@ -1,4 +1,5 @@
 // TODO: 전역 변수 지양하기
+import { LUCKY_DISCOUNT_RATE, PRODUCT_DISCOUNT, SUGGEST_DISCOUNT_RATE } from './constants';
 import productList from './data.json';
 import { scheduleRandomInterval } from './utils';
 
@@ -60,15 +61,24 @@ function main() {
   itemContainer.addEventListener('click', handleClickCartEvent);
 
   // 세일 타이머 등록
-  scheduleRandomInterval(luckySaleTime, 30000, 10000);
+  scheduleRandomInterval(luckySaleTime, 30000, 10000); // TODO: 상수 지정하기
   scheduleRandomInterval(suggestSaleTime, 60000, 20000);
+
+  /**
+   * TODO: 함수 내에서 공통적으로 실행되는 것들
+   * 1. 세일 아이템
+   * 2. 조건 판단
+   * 3. alert
+   * 4. 세일 가격 계산
+   * 5. updateSelections
+   */
 
   function luckySaleTime() {
     let luckyItem = productList[Math.floor(Math.random() * productList.length)];
 
     if (Math.random() < 0.3 && luckyItem.stockQuantity > 0) {
       alert('번개세일! ' + luckyItem.name + '이(가) 20% 할인 중입니다!');
-      luckyItem.price = Math.round(luckyItem.price * 0.8);
+      luckyItem.price = Math.round(luckyItem.price * (1 - LUCKY_DISCOUNT_RATE));
       updateSelections();
     }
   }
@@ -79,7 +89,7 @@ function main() {
 
       if (suggestItem) {
         alert(suggestItem.name + '은(는) 어떠세요? 지금 구매하시면 5% 추가 할인!');
-        suggestItem.price = Math.round(suggestItem.price * 0.95);
+        suggestItem.price = Math.round(suggestItem.price * (1 - SUGGEST_DISCOUNT_RATE));
         updateSelections();
       }
     }
@@ -102,6 +112,7 @@ function updateSelections() {
 function calculateCartItems() {
   totalAmt = 0;
   let itemCount = 0;
+
   let cartItems = itemContainer.children;
   let subTot = 0;
 
@@ -254,7 +265,7 @@ function handleClickCartEvent(event) {
   const productElement = document.getElementById(productId);
   const targetProduct = productList.find((product) => product.id === productId);
 
-  // 상품 정보 정제
+  // 상품 정보 정제 // TODO: 함수로 빼기
   const splitProduct = productElement.querySelector('span').textContent.split('x '); // [ '상품1 - 10000원 ', '1' ]
   const formattedProduct = splitProduct[0];
   const prevQuantity = parseInt(splitProduct[1]);
