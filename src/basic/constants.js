@@ -8,3 +8,6 @@ export const PRODUCT_DISCOUNT = {
   p4: 0.05,
   p5: 0.25,
 };
+
+// 밀리초 변환
+export const SEC = 1000;
