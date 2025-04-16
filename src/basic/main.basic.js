@@ -1,40 +1,43 @@
 // TODO: 전역 변수 지양하기
-import { LUCKY_DISCOUNT_RATE, PRODUCT_DISCOUNT, SEC, SUGGEST_DISCOUNT_RATE } from './constants';
+import AppContainer from './components/AppContainer';
 import products from './products.json';
 import { scheduleRandomInterval } from './utils';
+import {
+  LUCKY_DISCOUNT_RATE,
+  PRODUCT_DISCOUNT_RATE,
+  SUGGEST_DISCOUNT_RATE,
+  SEC,
+} from './constants';
 
-// let selection, sum, stockContainer, addBtn, itemContainer
-let lastSel,
-  totalAmt = 0;
+function createAppState() {
+  let lastSel = 0;
+  let totalAmt = 0;
 
-const AppContainer = `<div id="app">
-  <div class="bg-gray-100 p-8">
-    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-8">
-      <h1 class="text-2xl font-bold mb-4">장바구니</h1>
-      <div id="cart-items" class="mb-4"></div>
-      <div id="cart-total" class="text-xl font-bold mb-4"></div>
-      <select id="product-select" class="border rounded p-2 mr-2"></select>
-      <button id="add-to-cart" class="bg-blue-500 text-white px-4 py-2 rounded">추가</button>
-      <div id="stock-status" class="text-sm text-gray-500 mt-2"></div>
-    </div>
-  </div>
-</div>`;
+  return {
+    getLastSel: () => lastSel,
+    setLastSel: (val) => (lastSel = val),
+    getTotalAmt: () => totalAmt,
+    setTotalAmt: (val) => (totalAmt = val),
+  };
+}
 
 // DOM 요소 추가
 function render() {
-  document.body.innerHTML = AppContainer;
-  updateSelections();
-  calculateCartItems();
+  document.body.innerHTML = AppContainer();
 }
 
 function main() {
+  const appState = createAppState();
+
   render();
+  updateSelections();
+  calculateCartItems(appState);
 
   // 이벤트 핸들러 등록
   const addBtn = document.getElementById('add-to-cart');
   const itemContainer = document.getElementById('cart-items');
-  addBtn.addEventListener('click', handleClickAddBtn);
-  itemContainer.addEventListener('click', handleClickCartEvent);
+  addBtn.addEventListener('click', () => handleClickAddBtn(appState));
+  itemContainer.addEventListener('click', (event) => handleClickCartEvent(event, appState));
 
   // 세일 타이머 등록
   scheduleRandomInterval(luckySaleTime, 30 * SEC, 10 * SEC);
@@ -60,6 +63,7 @@ function main() {
   }
 
   function suggestSaleTime() {
+    const lastSel = appState.getLastSel();
     if (lastSel) {
       let suggestItem = products.find((item) => item.id !== lastSel && item.stock > 0);
 
@@ -86,49 +90,52 @@ function updateSelections() {
 }
 
 // 장바구니 가격 계산
-function calculateCartItems() {
-  totalAmt = 0;
+function calculateCartItems(appState) {
+  console.log('appState.getTotalAmt', appState.getTotalAmt());
+  let totalAmount = 0;
   let itemCount = 0;
   let subTot = 0;
 
-  // 장바구니 아이템 배열화
   const itemContainer = document.getElementById('cart-items');
 
+  // 장바구니 아이템 배열화
   const cartItems = Array.from(itemContainer.children);
 
   cartItems.forEach((cartItem) => {
     const currentItem = products.find((productItem) => productItem.id === cartItem.id);
     const selectedCount = parseInt(cartItem.querySelector('span').textContent.split('x ')[1]);
     const itemTot = currentItem.price * selectedCount;
-    const productDiscount = selectedCount >= 10 ? PRODUCT_DISCOUNT[currentItem.id] : 0;
+    const productDiscount = selectedCount >= 10 ? PRODUCT_DISCOUNT_RATE[currentItem.id] : 0;
     itemCount += selectedCount;
     subTot += itemTot;
-    totalAmt += itemTot * (1 - productDiscount);
+    totalAmount += itemTot * (1 - productDiscount);
   });
 
   let discRate = 0;
 
+  // 아이템 수량이 30개 이상일 경우 할인율 25
   if (itemCount >= 30) {
-    let bulkDisc = totalAmt * 0.25;
-    let itemDisc = subTot - totalAmt;
+    let bulkDisc = totalAmount * 0.25;
+    let itemDisc = subTot - totalAmount;
     if (bulkDisc > itemDisc) {
-      totalAmt = subTot * (1 - 0.25);
+      totalAmount = subTot * (1 - 0.25);
       discRate = 0.25;
     } else {
-      discRate = (subTot - totalAmt) / subTot;
+      discRate = (subTot - totalAmount) / subTot;
     }
   } else {
-    discRate = (subTot - totalAmt) / subTot;
+    discRate = (subTot - totalAmount) / subTot;
   }
 
   if (new Date().getDay() === 2) {
-    totalAmt *= 1 - 0.1;
+    totalAmount *= 1 - 0.1;
     discRate = Math.max(discRate, 0.1);
   }
 
+  appState.setTotalAmt(totalAmount);
+  // const finalAmount = appState.getTotalAmt();
   const sum = document.getElementById('cart-total');
-
-  sum.textContent = '총액: ' + Math.round(totalAmt) + '원';
+  sum.textContent = '총액: ' + Math.round(totalAmount) + '원';
 
   if (discRate > 0) {
     let span = document.createElement('span');
@@ -138,12 +145,12 @@ function calculateCartItems() {
   }
 
   updateStock();
-  renderPoints();
+  renderPoints(appState);
 }
 
 // 포인트 view
-const renderPoints = () => {
-  let points = Math.floor(totalAmt / 1000);
+const renderPoints = (appState) => {
+  const points = Math.floor(appState.getTotalAmt() / 1000);
   let pointContainer = document.getElementById('loyalty-points');
   const sum = document.getElementById('cart-total');
 
@@ -175,7 +182,7 @@ const updateStock = () => {
 main();
 
 // 추가 버튼 클릭 이벤트 핸들러
-function handleClickAddBtn() {
+function handleClickAddBtn(appState) {
   const selection = document.getElementById('product-select');
   const itemContainer = document.getElementById('cart-items');
 
@@ -219,14 +226,14 @@ function handleClickAddBtn() {
       itemContainer.appendChild(newItem);
       selectedItem.stock--;
     }
-    calculateCartItems();
-    lastSel = selectedItemId;
+    calculateCartItems(appState);
+    appState.setLastSel(selectedItemId);
   }
 }
 
 // TODO: 상품과 아이템 구분, 수량변경/삭제 이벤트 구분
 // 장바구니 아이템 이벤트 핸들러 => // TODO: 다른 이벤트 핸들러와 구분되도록 변수명 변경
-function handleClickCartEvent(event) {
+function handleClickCartEvent(event, appState) {
   // 장바구니 이벤트 확인
   const target = event.target;
   const isQuantityChanged = target.classList.contains('quantity-change');
@@ -265,5 +272,5 @@ function handleClickCartEvent(event) {
     productElement.remove();
   }
 
-  calculateCartItems();
+  calculateCartItems(appState);
 }
