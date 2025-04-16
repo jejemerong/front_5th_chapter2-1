@@ -3,53 +3,27 @@ import { LUCKY_DISCOUNT_RATE, PRODUCT_DISCOUNT, SEC, SUGGEST_DISCOUNT_RATE } fro
 import products from './products.json';
 import { scheduleRandomInterval } from './utils';
 
-let selection, addBtn, itemContainer, sum, stockContainer;
+// let selection, sum, stockContainer, addBtn, itemContainer
 let lastSel,
   totalAmt = 0;
 
+const AppContainer = `<div id="app">
+  <div class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-8">
+      <h1 class="text-2xl font-bold mb-4">장바구니</h1>
+      <div id="cart-items" class="mb-4"></div>
+      <div id="cart-total" class="text-xl font-bold mb-4"></div>
+      <select id="product-select" class="border rounded p-2 mr-2"></select>
+      <button id="add-to-cart" class="bg-blue-500 text-white px-4 py-2 rounded">추가</button>
+      <div id="stock-status" class="text-sm text-gray-500 mt-2"></div>
+    </div>
+  </div>
+</div>`;
+
 // DOM 요소 추가
 function render() {
-  const app = document.getElementById('app');
-
-  let appContainer = document.createElement('div');
-  let wrapper = document.createElement('div');
-  let cartTitle = document.createElement('h1');
-
-  itemContainer = document.createElement('div');
-  sum = document.createElement('div');
-  selection = document.createElement('select');
-  addBtn = document.createElement('button');
-  stockContainer = document.createElement('div');
-
-  itemContainer.id = 'cart-items';
-  sum.id = 'cart-total';
-  selection.id = 'product-select';
-  addBtn.id = 'add-to-cart';
-  stockContainer.id = 'stock-status';
-
-  appContainer.className = 'bg-gray-100 p-8';
-  wrapper.className =
-    'max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-8';
-  cartTitle.className = 'text-2xl font-bold mb-4';
-  sum.className = 'text-xl font-bold my-4';
-  selection.className = 'border rounded p-2 mr-2';
-  addBtn.className = 'bg-blue-500 text-white px-4 py-2 rounded';
-  stockContainer.className = 'text-sm text-gray-500 mt-2';
-
-  cartTitle.textContent = '장바구니';
-  addBtn.textContent = '추가';
-
+  document.body.innerHTML = AppContainer;
   updateSelections();
-
-  wrapper.appendChild(cartTitle);
-  wrapper.appendChild(itemContainer);
-  wrapper.appendChild(sum);
-  wrapper.appendChild(selection);
-  wrapper.appendChild(addBtn);
-  wrapper.appendChild(stockContainer);
-  appContainer.appendChild(wrapper);
-  app.appendChild(appContainer);
-
   calculateCartItems();
 }
 
@@ -57,6 +31,8 @@ function main() {
   render();
 
   // 이벤트 핸들러 등록
+  const addBtn = document.getElementById('add-to-cart');
+  const itemContainer = document.getElementById('cart-items');
   addBtn.addEventListener('click', handleClickAddBtn);
   itemContainer.addEventListener('click', handleClickCartEvent);
 
@@ -98,6 +74,7 @@ function main() {
 
 // 아이템 선택
 function updateSelections() {
+  const selection = document.getElementById('product-select');
   selection.innerHTML = '';
   products.forEach(function (item) {
     let opt = document.createElement('option');
@@ -115,9 +92,10 @@ function calculateCartItems() {
   let subTot = 0;
 
   // 장바구니 아이템 배열화
+  const itemContainer = document.getElementById('cart-items');
+
   const cartItems = Array.from(itemContainer.children);
 
-  //
   cartItems.forEach((cartItem) => {
     const currentItem = products.find((productItem) => productItem.id === cartItem.id);
     const selectedCount = parseInt(cartItem.querySelector('span').textContent.split('x ')[1]);
@@ -148,6 +126,8 @@ function calculateCartItems() {
     discRate = Math.max(discRate, 0.1);
   }
 
+  const sum = document.getElementById('cart-total');
+
   sum.textContent = '총액: ' + Math.round(totalAmt) + '원';
 
   if (discRate > 0) {
@@ -165,6 +145,7 @@ function calculateCartItems() {
 const renderPoints = () => {
   let points = Math.floor(totalAmt / 1000);
   let pointContainer = document.getElementById('loyalty-points');
+  const sum = document.getElementById('cart-total');
 
   if (!pointContainer) {
     pointContainer = document.createElement('span');
@@ -187,6 +168,7 @@ const updateStock = () => {
         '\n';
     }
   });
+  const stockContainer = document.getElementById('stock-status');
   stockContainer.textContent = infoMsg;
 };
 
@@ -194,6 +176,9 @@ main();
 
 // 추가 버튼 클릭 이벤트 핸들러
 function handleClickAddBtn() {
+  const selection = document.getElementById('product-select');
+  const itemContainer = document.getElementById('cart-items');
+
   let selectedItemId = selection.value;
   let selectedItem = products.find((product) => product.id === selectedItemId);
 
