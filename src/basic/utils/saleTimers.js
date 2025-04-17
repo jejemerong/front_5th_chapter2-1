@@ -1,6 +1,6 @@
 import products from '../products.json';
 import { LUCKY_DISCOUNT_RATE, SUGGEST_DISCOUNT_RATE } from '../constants';
-import { updateSelections } from '../main.basic';
+import { updateSelections } from '../render';
 
 export function luckySaleTime() {
   let luckyItem = products[Math.floor(Math.random() * products.length)];
