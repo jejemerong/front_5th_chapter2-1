@@ -16,18 +16,18 @@ const CartContainer: React.FC<CartProps> = ({ cart, products, setCart, setProduc
         if (item.id !== id) return [item];
         const product = products.find((product) => product.id === id);
         if (!product) return [item];
-        const newQty = item.stock + change;
-        if (newQty <= 0) return [];
-        if (newQty > product.stock + item.stock) {
+        const currentQuantity = item.stock + change;
+        if (currentQuantity <= 0) return [];
+        if (currentQuantity > product.stock + item.stock) {
           alert('재고가 부족합니다.');
           return [item];
         }
-        setProducts((ps) =>
-          ps.map((product) =>
+        setProducts((products) =>
+          products.map((product) =>
             product.id === id ? { ...product, stock: product.stock - change } : product
           )
         );
-        return [{ ...item, stock: newQty }];
+        return [{ ...item, stock: currentQuantity }];
       });
     });
   };
