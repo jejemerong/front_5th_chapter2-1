@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
-import ProductSelectOptionsView from './components/ProductSelectOptionsView';
-import CartContainer from './components/CartContainer';
-import Sum from './components/Sum';
 import { Product, CartItemType } from './types';
-import StockView from './components/StockView';
+import { CartContainer, ProductSelectOptionsView, StockView, Sum } from './components';
 import { scheduleRandomInterval } from './utils/scheduleRandomInterval';
 import { SEC } from './constants';
 
