@@ -1,7 +1,7 @@
 import PointsView from '../components/PointsView';
-import { updateStock } from '../main.basic';
 import { PRODUCT_DISCOUNT_RATE } from '../constants';
 import products from '../products.json';
+import { updateStock } from '../render';
 
 export function calculateCartItems(cartState) {
   let totalAmount = 0;

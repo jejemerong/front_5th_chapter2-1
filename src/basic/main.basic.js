@@ -3,11 +3,9 @@ import products from './products.json';
 import { scheduleRandomInterval } from './utils/scheduleRandomInterval';
 import { SEC } from './constants';
 import CartItemView from './components/CartItemView';
-import ProductSelectOptionsView from './components/ProductSelectOptionsView';
-import StockView from './components/StockView';
-import PointsView from './components/PointsView';
 import { luckySaleTime, suggestSaleTime } from './utils/saleTimers';
 import { calculateCartItems } from './utils/calculateCartItems';
+import { render, updateSelections } from './render';
 
 function createCartState() {
   let lastSel = 0;
@@ -19,11 +17,6 @@ function createCartState() {
     getTotalAmt: () => totalAmt,
     setTotalAmt: (val) => (totalAmt = val),
   };
-}
-
-// DOM 요소 추가
-function render(content) {
-  document.getElementById('app').innerHTML = content();
 }
 
 function main() {
@@ -43,31 +36,6 @@ function main() {
   scheduleRandomInterval(luckySaleTime, 30 * SEC, 10 * SEC);
   scheduleRandomInterval(suggestSaleTime, 60 * SEC, 20 * SEC);
 }
-
-// 아이템 선택
-export function updateSelections() {
-  const selection = document.getElementById('product-select');
-  selection.innerHTML = ProductSelectOptionsView(products);
-}
-
-// 포인트 view
-export const renderPoints = (cartState) => {
-  const points = Math.floor(cartState.getTotalAmt() / 1000);
-  const sum = document.getElementById('cart-total');
-  let pointContainer = document.getElementById('loyalty-points');
-
-  if (!pointContainer) {
-    sum.insertAdjacentHTML('beforeend', PointsView(points));
-  } else {
-    pointContainer.textContent = `(포인트: ${points})`;
-  }
-};
-
-// 재고 view
-export const updateStock = () => {
-  const stockContainer = document.getElementById('stock-status');
-  stockContainer.textContent = StockView(products);
-};
 
 main();
 
