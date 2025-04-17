@@ -1,19 +1,15 @@
 import AppContainer from './components/AppContainer';
 import products from './products.json';
 import { scheduleRandomInterval } from './utils/scheduleRandomInterval';
-import {
-  LUCKY_DISCOUNT_RATE,
-  PRODUCT_DISCOUNT_RATE,
-  SUGGEST_DISCOUNT_RATE,
-  SEC,
-} from './constants';
+import { SEC } from './constants';
 import CartItemView from './components/CartItemView';
 import ProductSelectOptionsView from './components/ProductSelectOptionsView';
 import StockView from './components/StockView';
 import PointsView from './components/PointsView';
 import { luckySaleTime, suggestSaleTime } from './utils/saleTimers';
+import { calculateCartItems } from './utils/calculateCartItems';
 
-function createAppState() {
+function createCartState() {
   let lastSel = 0;
   let totalAmt = 0;
 
@@ -31,17 +27,17 @@ function render(content) {
 }
 
 function main() {
-  const appState = createAppState();
+  const cartState = createCartState();
 
   render(AppContainer);
   updateSelections();
-  calculateCartItems(appState);
+  calculateCartItems(cartState);
 
   // 이벤트 핸들러 등록
   const addBtn = document.getElementById('add-to-cart');
   const itemContainer = document.getElementById('cart-items');
-  addBtn.addEventListener('click', () => handleClickAddBtn(appState));
-  itemContainer.addEventListener('click', (event) => handleClickCartEvent(event, appState));
+  addBtn.addEventListener('click', () => handleClickAddBtn(cartState));
+  itemContainer.addEventListener('click', (event) => handleClickCartEvent(event, cartState));
 
   // 세일 타이머 등록
   scheduleRandomInterval(luckySaleTime, 30 * SEC, 10 * SEC);
@@ -54,66 +50,9 @@ export function updateSelections() {
   selection.innerHTML = ProductSelectOptionsView(products);
 }
 
-// 장바구니 가격 계산
-function calculateCartItems(appState) {
-  console.log('appState.getTotalAmt', appState.getTotalAmt());
-  let totalAmount = 0;
-  let itemCount = 0;
-  let subTot = 0;
-
-  const itemContainer = document.getElementById('cart-items');
-
-  // 장바구니 아이템 배열화
-  const cartItems = Array.from(itemContainer.children);
-
-  cartItems.forEach((cartItem) => {
-    const currentItem = products.find((productItem) => productItem.id === cartItem.id);
-    const selectedCount = parseInt(cartItem.querySelector('span').textContent.split('x ')[1]);
-    const itemTot = currentItem.price * selectedCount;
-    const productDiscount = selectedCount >= 10 ? PRODUCT_DISCOUNT_RATE[currentItem.id] : 0;
-    itemCount += selectedCount;
-    subTot += itemTot;
-    totalAmount += itemTot * (1 - productDiscount);
-  });
-
-  let discRate = 0;
-
-  if (itemCount >= 30) {
-    let bulkDisc = totalAmount * 0.25;
-    let itemDisc = subTot - totalAmount;
-    if (bulkDisc > itemDisc) {
-      totalAmount = subTot * (1 - 0.25);
-      discRate = 0.25;
-    } else {
-      discRate = (subTot - totalAmount) / subTot;
-    }
-  } else {
-    discRate = (subTot - totalAmount) / subTot;
-  }
-
-  if (new Date().getDay() === 2) {
-    totalAmount *= 1 - 0.1;
-    discRate = Math.max(discRate, 0.1);
-  }
-
-  appState.setTotalAmt(totalAmount);
-  const sum = document.getElementById('cart-total');
-  sum.textContent = '총액: ' + Math.round(totalAmount) + '원';
-
-  if (discRate > 0) {
-    let span = document.createElement('span');
-    span.className = 'text-green-500 ml-2';
-    span.textContent = '(' + (discRate * 100).toFixed(1) + '% 할인 적용)';
-    sum.appendChild(span);
-  }
-
-  updateStock();
-  renderPoints(appState);
-}
-
 // 포인트 view
-const renderPoints = (appState) => {
-  const points = Math.floor(appState.getTotalAmt() / 1000);
+export const renderPoints = (cartState) => {
+  const points = Math.floor(cartState.getTotalAmt() / 1000);
   const sum = document.getElementById('cart-total');
   let pointContainer = document.getElementById('loyalty-points');
 
@@ -125,7 +64,7 @@ const renderPoints = (appState) => {
 };
 
 // 재고 view
-const updateStock = () => {
+export const updateStock = () => {
   const stockContainer = document.getElementById('stock-status');
   stockContainer.textContent = StockView(products);
 };
@@ -133,7 +72,7 @@ const updateStock = () => {
 main();
 
 // 추가 버튼 클릭 이벤트 핸들러
-function handleClickAddBtn(appState) {
+function handleClickAddBtn(cartState) {
   const selection = document.getElementById('product-select');
   const itemContainer = document.getElementById('cart-items');
 
@@ -160,14 +99,14 @@ function handleClickAddBtn(appState) {
       itemContainer.insertAdjacentHTML('beforeend', newItem);
       selectedItem.stock--;
     }
-    calculateCartItems(appState);
-    appState.setLastSel(selectedItemId);
+    calculateCartItems(cartState);
+    cartState.setLastSel(selectedItemId);
   }
 }
 
 // TODO: 상품과 아이템 구분, 수량변경/삭제 이벤트 구분
 // 장바구니 아이템 이벤트 핸들러 => // TODO: 다른 이벤트 핸들러와 구분되도록 변수명 변경
-function handleClickCartEvent(event, appState) {
+function handleClickCartEvent(event, cartState) {
   // 장바구니 이벤트 확인
   const target = event.target;
   const isQuantityChanged = target.classList.contains('quantity-change');
@@ -206,5 +145,5 @@ function handleClickCartEvent(event, appState) {
     productElement.remove();
   }
 
-  calculateCartItems(appState);
+  calculateCartItems(cartState);
 }

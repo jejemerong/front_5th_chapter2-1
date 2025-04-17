@@ -12,8 +12,8 @@ export function luckySaleTime() {
   }
 }
 
-export function suggestSaleTime(appState) {
-  const lastSel = appState.getLastSel();
+export function suggestSaleTime(cartState) {
+  const lastSel = cartState.getLastSel();
   if (lastSel) {
     let suggestItem = products.find((item) => item.id !== lastSel && item.stock > 0);
 
