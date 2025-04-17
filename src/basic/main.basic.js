@@ -1,4 +1,3 @@
-// TODO: 전역 변수 지양하기
 import AppContainer from './components/AppContainer';
 import products from './products.json';
 import { scheduleRandomInterval } from './utils';
@@ -8,6 +7,10 @@ import {
   SUGGEST_DISCOUNT_RATE,
   SEC,
 } from './constants';
+import CartItemView from './components/CartItemView';
+import ProductSelectOptionsView from './components/ProductSelectOptionsView';
+import StockView from './components/StockView';
+import PointsView from './components/PointsView';
 
 function createAppState() {
   let lastSel = 0;
@@ -22,14 +25,14 @@ function createAppState() {
 }
 
 // DOM 요소 추가
-function render() {
-  document.body.innerHTML = AppContainer();
+function render(content) {
+  document.getElementById('app').innerHTML = content();
 }
 
 function main() {
   const appState = createAppState();
 
-  render();
+  render(AppContainer);
   updateSelections();
   calculateCartItems(appState);
 
@@ -44,7 +47,7 @@ function main() {
   scheduleRandomInterval(suggestSaleTime, 60 * SEC, 20 * SEC);
 
   /**
-   * TODO: 함수 내에서 공통적으로 실행되는 것들
+   * TODO: 함수 내에서 공통적으로 실행되는 것들, 지금 이걸 수정할 때가 아니라 render 부터 잡아야 됨.
    * 1. 세일 아이템
    * 2. 조건 판단
    * 3. alert
@@ -79,14 +82,7 @@ function main() {
 // 아이템 선택
 function updateSelections() {
   const selection = document.getElementById('product-select');
-  selection.innerHTML = '';
-  products.forEach(function (item) {
-    let opt = document.createElement('option');
-    opt.value = item.id;
-    opt.textContent = item.name + ' - ' + item.price + '원';
-    if (item.stock === 0) opt.disabled = true;
-    selection.appendChild(opt);
-  });
+  selection.innerHTML = ProductSelectOptionsView(products);
 }
 
 // 장바구니 가격 계산
@@ -113,7 +109,6 @@ function calculateCartItems(appState) {
 
   let discRate = 0;
 
-  // 아이템 수량이 30개 이상일 경우 할인율 25
   if (itemCount >= 30) {
     let bulkDisc = totalAmount * 0.25;
     let itemDisc = subTot - totalAmount;
@@ -133,7 +128,6 @@ function calculateCartItems(appState) {
   }
 
   appState.setTotalAmt(totalAmount);
-  // const finalAmount = appState.getTotalAmt();
   const sum = document.getElementById('cart-total');
   sum.textContent = '총액: ' + Math.round(totalAmount) + '원';
 
@@ -151,32 +145,20 @@ function calculateCartItems(appState) {
 // 포인트 view
 const renderPoints = (appState) => {
   const points = Math.floor(appState.getTotalAmt() / 1000);
-  let pointContainer = document.getElementById('loyalty-points');
   const sum = document.getElementById('cart-total');
+  let pointContainer = document.getElementById('loyalty-points');
 
   if (!pointContainer) {
-    pointContainer = document.createElement('span');
-    pointContainer.id = 'loyalty-points';
-    pointContainer.className = 'text-blue-500 ml-2';
-    sum.appendChild(pointContainer);
+    sum.insertAdjacentHTML('beforeend', PointsView(points));
+  } else {
+    pointContainer.textContent = `(포인트: ${points})`;
   }
-  pointContainer.textContent = '(포인트: ' + points + ')';
 };
 
 // 재고 view
 const updateStock = () => {
-  let infoMsg = '';
-  products.forEach(function (item) {
-    if (item.stock < 5) {
-      infoMsg +=
-        item.name +
-        ': ' +
-        (item.stock > 0 ? '재고 부족 (' + item.stock + '개 남음)' : '품절') +
-        '\n';
-    }
-  });
   const stockContainer = document.getElementById('stock-status');
-  stockContainer.textContent = infoMsg;
+  stockContainer.textContent = StockView(products);
 };
 
 main();
@@ -205,25 +187,8 @@ function handleClickAddBtn(appState) {
         alert('재고가 부족합니다.');
       }
     } else {
-      let newItem = document.createElement('div');
-      newItem.id = selectedItem.id;
-      newItem.className = 'flex justify-between items-center mb-2';
-      newItem.innerHTML =
-        '<span>' +
-        selectedItem.name +
-        ' - ' +
-        selectedItem.price +
-        '원 x 1</span><div>' +
-        '<button class="quantity-change bg-blue-500 text-white px-2 py-1 rounded mr-1" data-product-id="' +
-        selectedItem.id +
-        '" data-change="-1">-</button>' +
-        '<button class="quantity-change bg-blue-500 text-white px-2 py-1 rounded mr-1" data-product-id="' +
-        selectedItem.id +
-        '" data-change="1">+</button>' +
-        '<button class="remove-item bg-red-500 text-white px-2 py-1 rounded" data-product-id="' +
-        selectedItem.id +
-        '">삭제</button></div>';
-      itemContainer.appendChild(newItem);
+      let newItem = CartItemView(selectedItem);
+      itemContainer.insertAdjacentHTML('beforeend', newItem);
       selectedItem.stock--;
     }
     calculateCartItems(appState);
