@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ProductSelectOptionsView from './components/ProductSelectOptionsView';
 import CartContainer from './components/CartContainer';
 import Sum from './components/Sum';
 import { Product, CartItemType } from './types';
 import StockView from './components/StockView';
+import { scheduleRandomInterval } from './utils/scheduleRandomInterval';
+import { SEC } from './constants';
 
 const initialProducts: Product[] = [
   { id: 'p1', name: '상품1', price: 10000, stock: 50 },
@@ -40,6 +42,50 @@ const App = () => {
       )
     );
   };
+
+  useEffect(() => {
+    // 번개세일 타이머
+    const luckySaleTime = () => {
+      const available = products.filter((product) => product.stock > 0);
+      if (available.length === 0) return;
+
+      const luckyItem = available[Math.floor(Math.random() * available.length)];
+      if (Math.random() < 0.3) {
+        setProducts((prevProducts) =>
+          prevProducts.map((product) =>
+            product.id === luckyItem.id ?
+              { ...product, price: Math.round(product.price * 0.8) }
+            : product
+          )
+        );
+        alert(`번개세일! ${luckyItem.name}이(가) 20% 할인 중입니다!`);
+      }
+    };
+
+    // 추천 상품 타이머
+    const suggestSaleTime = () => {
+      const lastSelItem = cart[cart.length - 1];
+      if (!lastSelItem) return;
+
+      const suggest = products.find(
+        (product) => product.id !== lastSelItem.id && product.stock > 0
+      );
+      if (!suggest) return;
+
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product.id === suggest.id ?
+            { ...product, price: Math.round(product.price * 0.95) }
+          : product
+        )
+      );
+      alert(`${suggest.name}은(는) 어떠세요? 지금 구매하시면 5% 추가 할인!`);
+    };
+
+    // 타이머 등록
+    scheduleRandomInterval(luckySaleTime, 30 * SEC, 10 * SEC);
+    scheduleRandomInterval(suggestSaleTime, 60 * SEC, 20 * SEC);
+  }, [cart, products]);
 
   return (
     <div className='bg-gray-100 p-8'>
