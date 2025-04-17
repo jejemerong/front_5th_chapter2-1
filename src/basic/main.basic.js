@@ -1,6 +1,6 @@
 import AppContainer from './components/AppContainer';
 import products from './products.json';
-import { scheduleRandomInterval } from './utils';
+import { scheduleRandomInterval } from './utils/scheduleRandomInterval';
 import {
   LUCKY_DISCOUNT_RATE,
   PRODUCT_DISCOUNT_RATE,
@@ -11,6 +11,7 @@ import CartItemView from './components/CartItemView';
 import ProductSelectOptionsView from './components/ProductSelectOptionsView';
 import StockView from './components/StockView';
 import PointsView from './components/PointsView';
+import { luckySaleTime, suggestSaleTime } from './utils/saleTimers';
 
 function createAppState() {
   let lastSel = 0;
@@ -45,42 +46,10 @@ function main() {
   // 세일 타이머 등록
   scheduleRandomInterval(luckySaleTime, 30 * SEC, 10 * SEC);
   scheduleRandomInterval(suggestSaleTime, 60 * SEC, 20 * SEC);
-
-  /**
-   * TODO: 함수 내에서 공통적으로 실행되는 것들, 지금 이걸 수정할 때가 아니라 render 부터 잡아야 됨.
-   * 1. 세일 아이템
-   * 2. 조건 판단
-   * 3. alert
-   * 4. 세일 가격 계산
-   * 5. updateSelections
-   */
-
-  function luckySaleTime() {
-    let luckyItem = products[Math.floor(Math.random() * products.length)];
-
-    if (Math.random() < 0.3 && luckyItem.stock > 0) {
-      alert('번개세일! ' + luckyItem.name + '이(가) 20% 할인 중입니다!');
-      luckyItem.price = Math.round(luckyItem.price * (1 - LUCKY_DISCOUNT_RATE));
-      updateSelections();
-    }
-  }
-
-  function suggestSaleTime() {
-    const lastSel = appState.getLastSel();
-    if (lastSel) {
-      let suggestItem = products.find((item) => item.id !== lastSel && item.stock > 0);
-
-      if (suggestItem) {
-        alert(suggestItem.name + '은(는) 어떠세요? 지금 구매하시면 5% 추가 할인!');
-        suggestItem.price = Math.round(suggestItem.price * (1 - SUGGEST_DISCOUNT_RATE));
-        updateSelections();
-      }
-    }
-  }
 }
 
 // 아이템 선택
-function updateSelections() {
+export function updateSelections() {
   const selection = document.getElementById('product-select');
   selection.innerHTML = ProductSelectOptionsView(products);
 }
