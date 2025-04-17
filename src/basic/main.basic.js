@@ -34,7 +34,7 @@ function main() {
 
   // 세일 타이머 등록
   scheduleRandomInterval(luckySaleTime, 30 * SEC, 10 * SEC);
-  scheduleRandomInterval(suggestSaleTime, 60 * SEC, 20 * SEC);
+  scheduleRandomInterval(() => suggestSaleTime(cartState), 60 * SEC, 20 * SEC);
 }
 
 main();
