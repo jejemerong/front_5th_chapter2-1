@@ -1,7 +1,5 @@
+import { PointsView, ProductSelectOptionsView, StockView } from './components';
 import products from './products.json';
-import PointsView from './components/PointsView';
-import StockView from './components/StockView';
-import ProductSelectOptionsView from './components/ProductSelectOptionsView';
 
 // DOM 요소 추가
 export const render = (content) => {

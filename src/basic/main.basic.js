@@ -1,23 +1,11 @@
-import AppContainer from './components/AppContainer';
+import { AppContainer, CartItemView } from './components';
 import products from './products.json';
 import { scheduleRandomInterval } from './utils/scheduleRandomInterval';
 import { SEC } from './constants';
-import CartItemView from './components/CartItemView';
 import { luckySaleTime, suggestSaleTime } from './utils/saleTimers';
 import { calculateCartItems } from './utils/calculateCartItems';
 import { render, updateSelections } from './render';
-
-function createCartState() {
-  let lastSel = 0;
-  let totalAmt = 0;
-
-  return {
-    getLastSel: () => lastSel,
-    setLastSel: (val) => (lastSel = val),
-    getTotalAmt: () => totalAmt,
-    setTotalAmt: (val) => (totalAmt = val),
-  };
-}
+import { createCartState } from './state/createCartState';
 
 function main() {
   const cartState = createCartState();
